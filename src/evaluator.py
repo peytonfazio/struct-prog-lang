@@ -18,7 +18,18 @@ def evaluate(ast, environment):
         for item in ast["items"]:
             result, _ = evaluate(item, environment)
             items.append(result)
-        return items, False        
+        return items, False       
+    if ast["tag"] == "matrix":
+        rows = []
+        for row in ast["rows"]:
+            newrow = []
+            for value in row:
+                result, _ = evaluate(value, environment)
+                newrow.append(result)
+            rows.append(newrow.copy())
+            newrow.clear()
+    
+        return rows, False
     if ast["tag"] == "object":
         object = {}
         for item in ast["items"]:
@@ -37,7 +48,10 @@ def evaluate(ast, environment):
     if ast["tag"] == "+":
         left_value, _ = evaluate(ast["left"], environment)
         right_value, _ = evaluate(ast["right"], environment)
-        return left_value + right_value, False
+        if type(left_value) == list:
+            return changeArrayAdd(left_value, right_value), False
+        else:
+            return left_value + right_value, False
     if ast["tag"] == "-":
         left_value, _ = evaluate(ast["left"], environment)
         right_value, _ = evaluate(ast["right"], environment)
@@ -237,6 +251,17 @@ def equals(code, environment, expected_result, expected_environment=None):
         {[expected_environment]}
         -- got --
         {[environment]}."""
+
+def changeArrayAdd(mat1, mat2):
+    assert len(mat1) == len(mat2), "ERROR: Matrices must be same size to add"
+    mat3 = []
+    
+    for i in range(len(mat1)):
+        mat3.append([])
+        for j in range(len(mat1[i])):
+            mat3[i].append(mat1[i][j] + mat2[i][j])
+    
+    return mat3
 
 
 def test_evaluate_single_value():

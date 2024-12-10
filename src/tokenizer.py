@@ -2,6 +2,7 @@ import re
 
 patterns = [
     [r"//[^\n]*", "comment"],  # Comment
+    [r"\s\|", " |"],
     [r"\s+", "whitespace"],  # Whitespace
     [r"\d*\.\d+|\d+\.\d*|\d+", "number"],  # numeric literals
     [r'"([^"]|"")*"', "string"],  # string literals
@@ -41,6 +42,7 @@ patterns = [
     [r">", ">"],
     [r"\&\&", "&&"],
     [r"\|\|", "||"],
+    [r"\|\s", "| "],
     [r"\!", "!"],
     [r"\=", "="],
     [r"\.", "."],
@@ -65,6 +67,7 @@ def tokenize(characters, generated_tags=test_generated_tags):
     while position < len(characters):
         # find the first token pattern that matches
         for pattern, tag in patterns:
+            
             match = pattern.match(characters, position)
             if match:
                 break
@@ -104,7 +107,7 @@ def tokenize(characters, generated_tags=test_generated_tags):
 
 def test_simple_tokens():
     print("testing simple tokens...")
-    examples = ".,[,],+,-,*,/,(,),{,},;,:,!,&&,||,<,>,<=,>=,==,!=,=".split(",")
+    examples = ".,[,],+,-,*,/,(,),{,},;,:,!,&&,||,<,>,<=,>=,==,!=,=,| , |".split(",")
     examples.append(",")
     for example in examples:
         t = tokenize(example)[0]
@@ -124,7 +127,6 @@ def test_simple_tokens():
     t1 = tokenize("and or not")
     t2 = tokenize("&& || !")
     assert [t["tag"] for t in t1] == [t["tag"] for t in t2]
-
 
 def test_number_tokens():
     print("testing number tokens...")

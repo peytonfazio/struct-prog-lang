@@ -8,6 +8,7 @@ grammar = """
     simple_expression = identifier | <boolean> | <number> | <string> | list_literal | object_literal | ("-" simple_expression) | ("!" simple_expression) | function_literal | ( "(" expression ")" ) ;
 
     list_literal = "[" expression { "," expression } "]" ;
+    row = "expression { "," expression } ;
     matrix_literal = "| " list_literal { "," list_literal } " |" ;
     object_literal = "{" [ expression ":" expression { "," expression ":" expression } ] "}" ;
     function_literal = "function" "(" [ identifier { "," identifier } ] ")" statement_list ;
@@ -175,17 +176,14 @@ def parse_matrix_literal(tokens):
         value, tokens = parse_simple_expression(tokens)
         row = []
         row.append(value)
-        while tokens[0]["tag"] == "," or tokens[0]["tag"] == ";":
+        while tokens[0]["tag"] == ",":
             if tokens[0]["tag"] == ";":
-                rows.append(row.copy())
+                rows.append(row)
                 row.clear()
             value, tokens = parse_simple_expression(tokens[1:])
             row.append(value)
-        rows.append(row.copy())
-    assert tokens[0]["tag"] == " |", f"Expected ' |' at position {tokens[0]['position']} got {tokens[0]['value']}"
-    return {"tag": "matrix", "rows": rows}, tokens[1:]
-
-
+    assert tokens[0]["tag"] == " |", f"Expected ' |' at position {tokens[0]['position']}"
+    return {"tag": "matrix", "rows":rows}, tokens[1:]
 
 def test_parse_matrix_literal():
     """
@@ -195,7 +193,7 @@ def test_parse_matrix_literal():
     ast, tokens = parse_matrix_literal(tokenize("| 1,2,3 |"))
     assert ast == {
         "tag": "matrix",
-        "rows": [
+        "items": [
             {"tag": "number", "value": 1},
             {"tag": "number", "value": 2},
             {"tag": "number", "value": 3},
